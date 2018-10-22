@@ -26,7 +26,7 @@ int drawWhat = 0;
 
 void drawFunc(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	
 	glPushMatrix();
 	glBegin(GL_TRIANGLES);
 
@@ -58,7 +58,6 @@ void drawFunc(void) {
 	}
 	glEnd();
 	glPopMatrix();
-
 	glFlush();
 
 	if (drawWhat == 0) {
@@ -73,14 +72,48 @@ void drawFunc(void) {
 	}
 }
 
+void rotateMesh(MyMesh *thisMesh, double xAngle, double yAngle, double zAngle) {
+	for (MyMesh::VertexIter v_it = thisMesh->vertices_begin(); v_it != thisMesh->vertices_end(); ++v_it)
+	{
+		MyMesh::VertexHandle vh = *v_it;
+		MyMesh::Point p = thisMesh->point(vh);
+		MyMesh::Point temp = MyMesh::Point();
+
+		// rotate X
+		double xRadian = (xAngle * M_PI) / 180.0;
+		temp[0] = p[0];
+		temp[1] = p[1] * cos(xRadian) - p[2] * sin(xRadian);
+		temp[2] = -p[1] * sin(xRadian) + p[2] * cos(xRadian);
+		p = temp;
+
+		// rotate Y
+		double yRadian = (yAngle * M_PI) / 180.0;
+		temp[0] = p[0] * cos(yRadian) - p[2] * sin(yRadian);
+		temp[1] = p[1];
+		temp[2] = p[0] * sin(yRadian) + p[2] * cos(yRadian);
+		p = temp;
+
+		// rotate Z
+		double zRadian = (zAngle * M_PI) / 180.0;
+		temp[0] = p[0] * cos(zRadian) + p[1] * sin(zRadian);
+		temp[1] = -p[0] * sin(zRadian) + p[1] * cos(zRadian);
+		temp[2] = p[2];
+		p = temp;
+
+		thisMesh->set_point(vh, p);
+	}
+}
+
 int main(int argc, char** argv)
 {
+	string plyFilePath = "D:\\AllProjects\\Cpp\\OpenGLProject\\face.ply";
+	
 	// read mesh
 	mesh.request_vertex_colors();
 	OpenMesh::IO::Options opt;
 	opt += OpenMesh::IO::Options::VertexColor;
-	cout << OpenMesh::IO::read_mesh(mesh, "D:\\AllProjects\\Cpp\\OpenGLProject\\face.ply", opt);
-
+	cout << OpenMesh::IO::read_mesh(mesh, plyFilePath, opt);
+	
 	// openGL init
 	glutInit(&argc, argv);
 
