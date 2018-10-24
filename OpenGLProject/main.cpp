@@ -159,7 +159,13 @@ int main(int argc, char** argv)
 	mesh.request_vertex_colors();
 	OpenMesh::IO::Options opt;
 	opt += OpenMesh::IO::Options::VertexColor;
-	cout << OpenMesh::IO::read_mesh(mesh, plyFilePath, opt);
+	if (OpenMesh::IO::read_mesh(mesh, plyFilePath, opt))
+		cout << "load " << plyFilePath << endl;
+	else
+	{
+		cout << "load " << plyFilePath << "fail"<< endl;
+		exit(0);
+	}
 	
 	// openGL init
 	glutInit(&argc, argv);
