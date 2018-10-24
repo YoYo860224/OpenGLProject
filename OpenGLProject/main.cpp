@@ -82,7 +82,7 @@ void rotateMesh(MyMesh *thisMesh, double xAngle, double yAngle, double zAngle) {
 		// rotate X
 		double xRadian = (xAngle * M_PI) / 180.0;
 		temp[0] = p[0];
-		temp[1] = p[1] * cos(xRadian) - p[2] * sin(xRadian);
+		temp[1] = p[1] * cos(xRadian) + p[2] * sin(xRadian);
 		temp[2] = -p[1] * sin(xRadian) + p[2] * cos(xRadian);
 		p = temp;
 
