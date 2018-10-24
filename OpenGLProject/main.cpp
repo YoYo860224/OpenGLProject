@@ -95,14 +95,16 @@ void drawFunc(void) {
 		str = plyFileName + "_" + to_string(drawIndex) + "_d.bmp";
 		drawWhat = 0;
 		drawIndex++;
-		if (drawIndex >= 10)
-			exit(0);
+
 	}
 
 	char *name = new char[str.length() + 1];
 	strcpy(name, str.c_str());
 	SaveScreenShot(name, WINDOW_WIDTH, WINDOW_HEIGHT);
 	delete[] name;
+
+	if (drawIndex >= 10 && drawWhat == 0)
+		exit(0);
 }
 
 void rotateMesh(MyMesh *thisMesh, double xAngle, double yAngle, double zAngle) {
