@@ -43,6 +43,7 @@ float rotateAngle[10][2] = {
 };
 
 void rotateMesh(MyMesh *thisMesh, double xAngle, double yAngle, double zAngle);
+void toPointCloud(void);
 
 void drawFunc(void) {
 	// rotateMesh
@@ -98,6 +99,7 @@ void drawFunc(void) {
 
 	}
 
+	toPointCloud();
 	char *name = new char[str.length() + 1];
 	strcpy(name, str.c_str());
 	SaveScreenShot(name, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -105,6 +107,46 @@ void drawFunc(void) {
 
 	if (drawIndex >= 10 && drawWhat == 0)
 		exit(0);
+}
+
+void toPointCloud(void) 
+{
+	GLint           viewport[4];
+	GLdouble        projection[16];
+	GLdouble        modelMatrix[16];
+	GLdouble        posX, posY, posZ;
+
+	static GLfloat winz[WINDOW_WIDTH * WINDOW_HEIGHT];
+	static BYTE rgb[WINDOW_WIDTH * WINDOW_HEIGHT * 3];
+
+	// 計算出顏色
+	glReadPixels(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGB, GL_BYTE, rgb);
+
+	// 計算出 posx, posy, posz
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix);
+	glGetDoublev(GL_PROJECTION_MATRIX, projection);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glReadPixels(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_DEPTH_COMPONENT, GL_FLOAT, winz);
+
+	for (int x = 0; x < WINDOW_WIDTH; x++)
+	{
+		for (int y = 0; y < WINDOW_HEIGHT; y++)
+		{
+			int winzIndex = y * WINDOW_WIDTH + x;
+			int rgbIndex = winzIndex * 3;
+			
+			gluUnProject(x, y, winz[winzIndex], modelMatrix, projection, viewport, &posX, &posY, &posZ);
+
+			if (x == 512 && y == 384) {
+				std::cout << posX << std::endl;
+				std::cout << posY << std::endl;
+				std::cout << posZ << std::endl;
+				std::cout << (int)rgb[rgbIndex] << std::endl;
+				std::cout << (int)rgb[rgbIndex + 1] << std::endl;
+				std::cout << (int)rgb[rgbIndex + 2] << std::endl;
+			}
+		}
+	}
 }
 
 void rotateMesh(MyMesh *thisMesh, double xAngle, double yAngle, double zAngle) {
