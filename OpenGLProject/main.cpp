@@ -43,7 +43,7 @@ float rotateAngle[10][2] = {
 };
 
 void rotateMesh(MyMesh *thisMesh, double xAngle, double yAngle, double zAngle);
-void toPointCloud(void);
+void toPointCloud(string name);
 
 void drawFunc(void) {
 	// rotateMesh
@@ -90,16 +90,15 @@ void drawFunc(void) {
 	string str;
 	if (drawWhat == 0) {
 		str = plyFileName + "_" + to_string(drawIndex) + "_rgb.bmp";
+		toPointCloud(plyFileName + "_" + to_string(drawIndex) + "_pointcloud.ply");
 		drawWhat = 1;
 	}
 	else if (drawWhat == 1) {
 		str = plyFileName + "_" + to_string(drawIndex) + "_d.bmp";
 		drawWhat = 0;
 		drawIndex++;
-
 	}
 
-	toPointCloud();
 	char *name = new char[str.length() + 1];
 	strcpy(name, str.c_str());
 	SaveScreenShot(name, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -109,7 +108,7 @@ void drawFunc(void) {
 		exit(0);
 }
 
-void toPointCloud(void) 
+void toPointCloud(string name) 
 {
 	GLint           viewport[4];
 	GLdouble        projection[16];
@@ -128,25 +127,55 @@ void toPointCloud(void)
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glReadPixels(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_DEPTH_COMPONENT, GL_FLOAT, winz);
 
-	for (int x = 0; x < WINDOW_WIDTH; x++)
+	string s = "";
+	stringstream ss;
+
+	int winzIndex = 0;
+	int rgbIndex = 0;
+	int vertex = 0;
+
+	for (int y = 0; y < WINDOW_HEIGHT ; y++)
 	{
-		for (int y = 0; y < WINDOW_HEIGHT; y++)
+		for (int x = 0; x < WINDOW_WIDTH; x++)
 		{
-			int winzIndex = y * WINDOW_WIDTH + x;
-			int rgbIndex = winzIndex * 3;
-			
 			gluUnProject(x, y, winz[winzIndex], modelMatrix, projection, viewport, &posX, &posY, &posZ);
 
-			if (x == 512 && y == 384) {
-				std::cout << posX << std::endl;
-				std::cout << posY << std::endl;
-				std::cout << posZ << std::endl;
-				std::cout << (int)rgb[rgbIndex] << std::endl;
-				std::cout << (int)rgb[rgbIndex + 1] << std::endl;
-				std::cout << (int)rgb[rgbIndex + 2] << std::endl;
+			if (posZ > VIEWPOINT_FARZ + 10) {
+				ss << posX << " "
+					<< posY << " " 
+					<< posZ << " " 
+					<< (int)rgb[rgbIndex] << " "
+					<< (int)rgb[rgbIndex + 1] << " "
+					<< (int)rgb[rgbIndex + 2] << std::endl;
+
+				s += ss.str();
+				ss.str("");
+				ss.clear();	
+
+				vertex++;
 			}
+
+			winzIndex++;
+			rgbIndex += 3;
 		}
 	}
+
+	fstream f;
+	f.open(name, ios::out);
+	f << "ply" << std::endl;
+	f << "format ascii 1.0" << std::endl;
+	f << "element vertex " << vertex << std::endl;
+	f << "property float x" << std::endl;
+	f << "property float y" << std::endl;
+	f << "property float z" << std::endl;
+	f << "property uchar red" << std::endl;
+	f << "property uchar green" << std::endl;
+	f << "property uchar blue" << std::endl;
+	f << "element face 0" << std::endl;
+	f << "property list uchar int vertex_indices" << std::endl;
+	f << "end_header" << std::endl;
+	f << s;
+	f.close();
 }
 
 void rotateMesh(MyMesh *thisMesh, double xAngle, double yAngle, double zAngle) {
@@ -183,7 +212,9 @@ void rotateMesh(MyMesh *thisMesh, double xAngle, double yAngle, double zAngle) {
 
 string SplitFilename(const std::string& str) {
 	unsigned found = str.find_last_of("/\\");
-	return str.substr(found + 1);
+	string temp = str.substr(found + 1);
+	unsigned foundDot = temp.find_last_of(".");
+	return temp.substr(0, foundDot);
 }
 
 int main(int argc, char** argv)
