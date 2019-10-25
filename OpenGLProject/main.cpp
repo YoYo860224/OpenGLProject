@@ -222,7 +222,7 @@ int main(int argc, char** argv)
 	// argv[0]: this program name
 	// argv[1]: file_name
 
-	plyFilePath = "D:\\AllProjects\\Cpp\\OpenGLProject\\face.ply";
+	plyFilePath = "..\\plyFile\\face.ply";
 	if (argc >= 2)
 		plyFilePath = argv[1];
 
